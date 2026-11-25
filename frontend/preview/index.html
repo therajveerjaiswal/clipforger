@@ -1,0 +1,443 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+  <meta charset="UTF-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1.0">
+  <title>ClipForge AI - Gaming Stream Highlight Clipper Studio</title>
+  <script src="https://cdn.tailwindcss.com"></script>
+  <link rel="stylesheet" href="https://fonts.googleapis.com/css2?family=Montserrat:wght@400;600;800;900&family=Inter:wght@400;500;600;700&display=swap">
+  <script src="https://unpkg.com/lucide@latest"></script>
+  <script>
+    tailwind.config = {
+      theme: {
+        extend: {
+          colors: {
+            background: "#0B0E14",
+            surface: "#121721",
+            surfaceBorder: "#1E2638",
+            brand: {
+              400: "#818CF8",
+              500: "#6366F1",
+              600: "#4F46E5",
+            },
+            accent: {
+              cyan: "#06B6D4",
+              amber: "#F59E0B",
+              emerald: "#10B981",
+              rose: "#F43F5E",
+            }
+          },
+          fontFamily: {
+            sans: ["Inter", "sans-serif"],
+            montserrat: ["Montserrat", "sans-serif"],
+          }
+        }
+      }
+    }
+  </script>
+  <style>
+    body {
+      background: radial-gradient(circle at 50% 0%, #151b28 0%, #0b0e14 100%);
+      color: #F0F3F6;
+      font-family: 'Inter', sans-serif;
+      min-height: 100vh;
+    }
+    .karaoke-glow {
+      text-shadow: 0 0 16px rgba(255, 215, 0, 0.8), 2px 2px 0 #000, -2px -2px 0 #000, 2px -2px 0 #000, -2px 2px 0 #000;
+    }
+    @keyframes pulse-sub {
+      0%, 100% { transform: scale(1); }
+      50% { transform: scale(1.08); }
+    }
+    .active-word {
+      animation: pulse-sub 0.4s ease-in-out infinite;
+    }
+  </style>
+</head>
+<body class="flex flex-col min-h-screen">
+
+  <!-- Header -->
+  <header class="sticky top-0 z-40 w-full border-b border-surfaceBorder bg-background/80 backdrop-blur-md">
+    <div class="flex h-16 items-center justify-between px-4 sm:px-8 max-w-7xl mx-auto">
+      <div class="flex items-center gap-2.5">
+        <div class="flex h-9 w-9 items-center justify-center rounded-xl bg-gradient-to-tr from-brand-600 to-accent-cyan shadow-lg shadow-brand-500/20">
+          <i data-lucide="flame" class="h-5 w-5 text-white"></i>
+        </div>
+        <span class="text-lg font-bold tracking-tight text-white">
+          Clip<span class="text-brand-400">Forge</span> <span class="text-xs px-2 py-0.5 rounded-full bg-brand-500/20 text-brand-300 font-semibold border border-brand-500/30">AI SaaS</span>
+        </span>
+      </div>
+
+      <div class="flex items-center gap-3">
+        <!-- Daily Quota Badge -->
+        <div class="hidden sm:flex items-center gap-2 rounded-full border border-surfaceBorder bg-surface px-3 py-1 text-xs">
+          <span class="text-gray-400">
+            Reels Today: <strong class="text-emerald-400">10/10 Free</strong>
+          </span>
+          <span class="text-gray-600">|</span>
+          <span class="text-gray-400">
+            Streams: <strong class="text-emerald-400">3/3</strong>
+          </span>
+        </div>
+
+        <button onclick="alert('Razorpay Checkout: Pro Subscription ₹499/month activated in sandbox')" class="flex items-center gap-1.5 rounded-lg bg-gradient-to-r from-amber-500 to-amber-600 px-3.5 py-1.5 text-xs font-semibold text-black shadow-md shadow-amber-500/20 hover:brightness-110 transition-all">
+          <i data-lucide="crown" class="h-3.5 w-3.5"></i> Upgrade Pro (₹499)
+        </button>
+
+        <div class="flex items-center gap-2">
+          <div class="flex h-8 w-8 items-center justify-center rounded-full bg-brand-600 text-xs font-bold text-white border border-surfaceBorder">
+            G
+          </div>
+        </div>
+      </div>
+    </div>
+  </header>
+
+  <!-- Main Workspace -->
+  <div class="flex flex-1 max-w-7xl w-full mx-auto">
+    <!-- Desktop Sidebar -->
+    <aside class="hidden lg:flex w-64 flex-col border-r border-surfaceBorder bg-surface/40 p-4 space-y-2">
+      <p class="px-3 text-[10px] font-bold uppercase tracking-wider text-gray-500">Navigation</p>
+      <a href="#" class="flex items-center gap-3 rounded-xl px-3 py-2.5 text-sm font-medium bg-brand-600/15 text-brand-400 border border-brand-500/20">
+        <i data-lucide="layout-dashboard" class="h-4 w-4"></i> Create Reels
+      </a>
+      <a href="#clips-section" class="flex items-center gap-3 rounded-xl px-3 py-2.5 text-sm font-medium text-gray-400 hover:bg-surface hover:text-white">
+        <i data-lucide="film" class="h-4 w-4"></i> Reel Library (3)
+      </a>
+      <a href="#" onclick="alert('Opens Razorpay Subscription Modal')" class="flex items-center gap-3 rounded-xl px-3 py-2.5 text-sm font-medium text-gray-400 hover:bg-surface hover:text-white">
+        <i data-lucide="credit-card" class="h-4 w-4"></i> Pro Membership
+      </a>
+
+      <div class="mt-auto rounded-2xl border border-surfaceBorder bg-surface p-4 text-xs">
+        <div class="flex items-center gap-1.5 text-emerald-400 font-semibold mb-1">
+          <i data-lucide="shield-check" class="h-4 w-4"></i> Anti-Abuse Protected
+        </div>
+        <p class="text-[11px] text-gray-400">
+          Hardware & IP rate limiter active. Prevents multi-account bypass on Free tier.
+        </p>
+      </div>
+    </aside>
+
+    <!-- Main Studio Content -->
+    <main class="flex-1 p-4 sm:p-8 space-y-6 max-w-5xl">
+
+      <!-- AdSlot Top Banner (Free Tier) -->
+      <div class="rounded-2xl border border-surfaceBorder bg-gradient-to-r from-surface to-surface/80 p-3.5 flex items-center justify-between">
+        <div class="flex items-center gap-3">
+          <div class="flex h-9 w-9 items-center justify-center rounded-xl bg-amber-500/10 text-amber-400 border border-amber-500/20">
+            <i data-lucide="sparkles" class="h-4 w-4"></i>
+          </div>
+          <div>
+            <div class="flex items-center gap-2">
+              <span class="text-[9px] font-bold uppercase tracking-wider text-gray-500">Sponsored</span>
+              <span class="rounded bg-brand-500/20 px-1 py-0.2 text-[8px] font-semibold text-brand-300">Google AdSense</span>
+            </div>
+            <p class="text-xs font-semibold text-white">Upgrade to ClipForge Pro for 1080p 60fps & 100% Ad-Free Experience</p>
+          </div>
+        </div>
+        <button onclick="alert('Razorpay Subscription Modal')" class="rounded-lg bg-amber-500 px-3 py-1.5 text-xs font-bold text-black hover:bg-amber-400">
+          Remove Ads
+        </button>
+      </div>
+
+      <!-- Long-Stream Input Form -->
+      <div class="rounded-3xl border border-surfaceBorder bg-surface/90 p-5 sm:p-7 shadow-2xl backdrop-blur-xl">
+        <div class="mb-4">
+          <div class="flex items-center gap-2 text-brand-400 text-xs font-semibold uppercase tracking-wider mb-1">
+            <i data-lucide="zap" class="h-4 w-4"></i> 20–30hr Long-Stream Zero-Download Clipper
+          </div>
+          <h2 class="text-xl sm:text-2xl font-bold text-white tracking-tight">
+            Turn Any Massive Gaming Stream into Viral Reels
+          </h2>
+          <p class="text-xs text-gray-400 mt-1">
+            Audio energy spike detection + yt-dlp surgical section cutting. No 50GB downloads.
+          </p>
+        </div>
+
+        <div class="space-y-4">
+          <div class="relative">
+            <div class="pointer-events-none absolute inset-y-0 left-0 flex items-center pl-4 text-gray-400">
+              <i data-lucide="video" class="h-5 w-5"></i>
+            </div>
+            <input
+              id="stream-url-input"
+              type="text"
+              value="https://www.youtube.com/watch?v=dQw4w9WgXcQ (24-Hour GTA V RP Tournament Stream)"
+              class="w-full rounded-2xl border border-surfaceBorder bg-background py-3.5 pl-11 pr-4 text-xs sm:text-sm text-white focus:border-brand-500 focus:outline-none"
+            />
+          </div>
+
+          <div class="grid grid-cols-1 sm:grid-cols-2 gap-3 text-xs">
+            <div>
+              <label class="block text-gray-400 font-medium mb-1">Highlight Reels to Extract:</label>
+              <select class="w-full rounded-xl border border-surfaceBorder bg-background px-3 py-2 text-white">
+                <option>3 Viral Clips (Recommended)</option>
+                <option>1 Best Highlight</option>
+                <option>5 Action Moments</option>
+              </select>
+            </div>
+            <div>
+              <label class="block text-gray-400 font-medium mb-1">9:16 Vertical Framing:</label>
+              <select class="w-full rounded-xl border border-surfaceBorder bg-background px-3 py-2 text-white">
+                <option>Blurred Background + Sharp Center Gameplay</option>
+                <option>Action Center Crop</option>
+              </select>
+            </div>
+          </div>
+
+          <button id="btn-generate" onclick="startSimulatedJob()" class="w-full flex items-center justify-center gap-2 rounded-2xl bg-gradient-to-r from-brand-600 to-accent-cyan py-3.5 px-6 text-sm font-bold text-white shadow-lg shadow-brand-500/25 hover:brightness-110 transition-all">
+            <i data-lucide="sparkles" class="h-4 w-4"></i> Generate 9:16 Reels with Karaoke Subtitles
+          </button>
+        </div>
+
+        <!-- Simulated Progress Tracker (Hidden until button click) -->
+        <div id="job-tracker" class="hidden mt-5 rounded-2xl border border-surfaceBorder bg-background p-4 space-y-2">
+          <div class="flex items-center justify-between text-xs">
+            <span id="tracker-stage" class="font-semibold text-white flex items-center gap-2">
+              <i data-lucide="loader-2" class="h-4 w-4 text-brand-400 animate-spin"></i> Analyzing Audio RMS Energy Spikes...
+            </span>
+            <span id="tracker-pct" class="font-bold text-brand-400">40%</span>
+          </div>
+          <div class="h-2 w-full rounded-full bg-surface overflow-hidden">
+            <div id="tracker-bar" class="h-full bg-gradient-to-r from-brand-500 to-accent-cyan transition-all duration-500" style="width: 40%"></div>
+          </div>
+          <p id="tracker-sub" class="text-[11px] text-gray-400">Detecting shouting, clutch kills & high chat replay velocity...</p>
+        </div>
+      </div>
+
+      <!-- Live Interactive Reel Preview & Subtitle Studio -->
+      <div class="grid grid-cols-1 lg:grid-cols-12 gap-6 items-start">
+        
+        <!-- 9:16 Vertical Reel Player Phone Frame -->
+        <div class="lg:col-span-5 flex flex-col items-center">
+          <div class="relative aspect-[9/16] w-full max-w-[320px] rounded-[36px] border-4 border-surfaceBorder bg-black overflow-hidden shadow-2xl flex flex-col justify-between p-4">
+            <!-- Simulated Gameplay Background with 9:16 blur & center action -->
+            <div class="absolute inset-0 bg-cover bg-center filter blur-md opacity-40" style="background-image: url('https://images.unsplash.com/photo-1542751371-adc38448a05e?q=80&w=800');"></div>
+            
+            <!-- Sharp Gameplay Center Screen -->
+            <div class="absolute inset-x-0 top-1/4 h-1/2 bg-cover bg-center shadow-2xl border-y border-white/10" style="background-image: url('https://images.unsplash.com/photo-1542751371-adc38448a05e?q=80&w=800');">
+              <div class="absolute top-2 right-2 rounded bg-rose-600/90 px-1.5 py-0.5 text-[9px] font-bold text-white uppercase animate-pulse">
+                CLUTCH 1v4
+              </div>
+            </div>
+
+            <!-- Top Curiosity Hook Badge -->
+            <div class="relative z-10 mx-auto rounded-xl bg-black/80 backdrop-blur-md px-3 py-1.5 border border-brand-500/40 text-center">
+              <p id="hook-preview" class="text-[11px] font-extrabold uppercase tracking-wide text-brand-300">
+                HE CLUTCHED WITH 1 HP?! 😱
+              </p>
+            </div>
+
+            <!-- Animated Burning Karaoke Subtitles -->
+            <div class="relative z-10 pb-12 text-center">
+              <p class="font-montserrat text-lg font-black tracking-wider uppercase drop-shadow-[0_2px_4px_rgba(0,0,0,0.9)]">
+                <span id="sub-word-1" class="text-white">WAIT</span> 
+                <span id="sub-word-2" class="text-white">UNTIL</span> 
+                <span id="sub-word-3" class="text-amber-400 active-word karaoke-glow">THE END</span> 
+                <span id="sub-word-4" class="text-white">BRO!</span>
+              </p>
+            </div>
+
+            <!-- Player Bar -->
+            <div class="relative z-10 flex items-center justify-between rounded-xl bg-black/70 backdrop-blur-md px-3 py-2 text-white text-xs">
+              <i data-lucide="play" class="h-4 w-4 cursor-pointer text-brand-400"></i>
+              <span class="text-[10px] text-gray-300 font-mono">00:14 / 00:22</span>
+              <i data-lucide="volume-2" class="h-4 w-4 cursor-pointer text-gray-300"></i>
+            </div>
+          </div>
+          <span class="text-[11px] text-gray-500 mt-2 font-mono">Interactive 9:16 Vertical Reel Player</span>
+        </div>
+
+        <!-- Subtitle Styling Controls & Studio Settings -->
+        <div class="lg:col-span-7 space-y-5">
+          <div class="rounded-3xl border border-surfaceBorder bg-surface p-6 shadow-xl space-y-4">
+            <div class="flex items-center gap-2 text-xs font-bold text-brand-400 uppercase tracking-wider">
+              <i data-lucide="palette" class="h-4 w-4"></i> Live Subtitle & Karaoke Customizer
+            </div>
+
+            <div>
+              <label class="block text-xs font-medium text-gray-400 mb-1.5">Karaoke Word Highlight Color:</label>
+              <div class="flex items-center gap-2.5">
+                <button onclick="setHighlightColor('#FFD700')" class="h-8 w-8 rounded-full border-2 border-white bg-[#FFD700] shadow-lg"></button>
+                <button onclick="setHighlightColor('#00FFFF')" class="h-8 w-8 rounded-full border-2 border-transparent bg-[#00FFFF]"></button>
+                <button onclick="setHighlightColor('#FF0055')" class="h-8 w-8 rounded-full border-2 border-transparent bg-[#FF0055]"></button>
+                <button onclick="setHighlightColor('#39FF14')" class="h-8 w-8 rounded-full border-2 border-transparent bg-[#39FF14]"></button>
+                <button onclick="setHighlightColor('#FF9900')" class="h-8 w-8 rounded-full border-2 border-transparent bg-[#FF9900]"></button>
+              </div>
+            </div>
+
+            <div>
+              <label class="block text-xs font-medium text-gray-400 mb-1">Font Family:</label>
+              <select onchange="setFont(this.value)" class="w-full rounded-xl border border-surfaceBorder bg-background px-3 py-2 text-xs text-white">
+                <option value="Montserrat">Montserrat ExtraBold (TikTok Standard)</option>
+                <option value="Inter">Inter UI Modern</option>
+                <option value="sans-serif">System Bold</option>
+              </select>
+            </div>
+
+            <div>
+              <div class="flex justify-between text-xs text-gray-400 mb-1">
+                <span>Text Outline Width</span>
+                <span id="outline-val" class="font-bold text-white">3px</span>
+              </div>
+              <input type="range" min="1" max="6" value="3" oninput="document.getElementById('outline-val').innerText = this.value + 'px'" class="w-full accent-brand-500">
+            </div>
+
+            <button onclick="alert('Subtitle styles updated and saved to Supabase!')" class="w-full rounded-xl bg-brand-600 py-2.5 text-xs font-bold text-white shadow-md hover:bg-brand-500">
+              Apply & Save Subtitle Preset
+            </button>
+          </div>
+
+          <div class="rounded-3xl border border-surfaceBorder bg-surface p-5 text-xs space-y-2">
+            <span class="text-[10px] font-bold uppercase text-gray-400">Gemini Flash Transcript & Hook:</span>
+            <p class="text-gray-300 italic bg-background/50 p-3 rounded-xl border border-surfaceBorder">
+              "No way he just headshot the last guy through the smoke with 1 HP remaining! That is completely absurd!"
+            </p>
+          </div>
+        </div>
+      </div>
+
+      <!-- Generated Highlight Reels Library -->
+      <div id="clips-section" class="pt-6">
+        <div class="flex items-center justify-between mb-4">
+          <h3 class="text-lg font-bold text-white flex items-center gap-2">
+            <i data-lucide="film" class="h-5 w-5 text-brand-400"></i>
+            Recent Generated Reels (3)
+          </h3>
+          <span class="text-xs text-emerald-400 font-semibold flex items-center gap-1">
+            <i data-lucide="check-circle-2" class="h-3.5 w-3.5"></i> Stored in Cloudflare R2 (48h auto-expiry)
+          </span>
+        </div>
+
+        <div class="grid grid-cols-1 sm:grid-cols-3 gap-4">
+          <!-- Card 1 -->
+          <div class="rounded-2xl border border-surfaceBorder bg-surface overflow-hidden group hover:border-brand-500/40 transition-all">
+            <div class="relative aspect-[9/16] bg-black">
+              <img src="https://images.unsplash.com/photo-1542751371-adc38448a05e?q=80&w=400" class="h-full w-full object-cover">
+              <div class="absolute top-2 left-2 rounded-full bg-black/75 px-2 py-0.5 text-[10px] font-bold text-amber-400">🔥 96 Score</div>
+              <div class="absolute top-2 right-2 rounded bg-brand-600 px-1.5 py-0.5 text-[9px] font-bold text-white">720p</div>
+              <div class="absolute bottom-2 right-2 rounded bg-black/70 px-2 py-0.5 text-[10px] text-white">22s</div>
+            </div>
+            <div class="p-3">
+              <h4 class="text-xs font-bold text-white line-clamp-1">UNREAL 1v4 CLUTCH PLAY! 🔥</h4>
+              <p class="text-[10px] text-brand-300 line-clamp-1 mt-0.5">"HE CLUTCHED WITH 1 HP?!"</p>
+              <button onclick="alert('Downloading 22s vertical reel...')" class="mt-2.5 w-full rounded-xl bg-brand-600 py-1.5 text-xs font-semibold text-white hover:bg-brand-500 flex items-center justify-center gap-1">
+                <i data-lucide="download" class="h-3.5 w-3.5"></i> Download MP4
+              </button>
+            </div>
+          </div>
+
+          <!-- Card 2 -->
+          <div class="rounded-2xl border border-surfaceBorder bg-surface overflow-hidden group hover:border-brand-500/40 transition-all">
+            <div class="relative aspect-[9/16] bg-black">
+              <img src="https://images.unsplash.com/photo-1511512578047-dfb367046420?q=80&w=400" class="h-full w-full object-cover">
+              <div class="absolute top-2 left-2 rounded-full bg-black/75 px-2 py-0.5 text-[10px] font-bold text-amber-400">🔥 91 Score</div>
+              <div class="absolute top-2 right-2 rounded bg-brand-600 px-1.5 py-0.5 text-[9px] font-bold text-white">720p</div>
+              <div class="absolute bottom-2 right-2 rounded bg-black/70 px-2 py-0.5 text-[10px] text-white">18s</div>
+            </div>
+            <div class="p-3">
+              <h4 class="text-xs font-bold text-white line-clamp-1">HILARIOUS CAR CRASH RAGE 😂</h4>
+              <p class="text-[10px] text-brand-300 line-clamp-1 mt-0.5">"You won't believe this bug..."</p>
+              <button onclick="alert('Downloading 18s vertical reel...')" class="mt-2.5 w-full rounded-xl bg-brand-600 py-1.5 text-xs font-semibold text-white hover:bg-brand-500 flex items-center justify-center gap-1">
+                <i data-lucide="download" class="h-3.5 w-3.5"></i> Download MP4
+              </button>
+            </div>
+          </div>
+
+          <!-- Card 3 -->
+          <div class="rounded-2xl border border-surfaceBorder bg-surface overflow-hidden group hover:border-brand-500/40 transition-all">
+            <div class="relative aspect-[9/16] bg-black">
+              <img src="https://images.unsplash.com/photo-1538481199705-c710c4e965fc?q=80&w=400" class="h-full w-full object-cover">
+              <div class="absolute top-2 left-2 rounded-full bg-black/75 px-2 py-0.5 text-[10px] font-bold text-amber-400">🔥 88 Score</div>
+              <div class="absolute top-2 right-2 rounded bg-brand-600 px-1.5 py-0.5 text-[9px] font-bold text-white">720p</div>
+              <div class="absolute bottom-2 right-2 rounded bg-black/70 px-2 py-0.5 text-[10px] text-white">25s</div>
+            </div>
+            <div class="p-3">
+              <h4 class="text-xs font-bold text-white line-clamp-1">INSANE SNIPER NOSCOPE 🎯</h4>
+              <p class="text-[10px] text-brand-300 line-clamp-1 mt-0.5">"Calculated shot from 400m"</p>
+              <button onclick="alert('Downloading 25s vertical reel...')" class="mt-2.5 w-full rounded-xl bg-brand-600 py-1.5 text-xs font-semibold text-white hover:bg-brand-500 flex items-center justify-center gap-1">
+                <i data-lucide="download" class="h-3.5 w-3.5"></i> Download MP4
+              </button>
+            </div>
+          </div>
+        </div>
+      </div>
+
+    </main>
+  </div>
+
+  <!-- Mobile Touch Bottom Nav -->
+  <nav class="fixed bottom-0 left-0 right-0 z-50 flex h-16 items-center justify-around border-t border-surfaceBorder bg-background/95 backdrop-blur-lg lg:hidden px-2">
+    <a href="#" class="flex flex-col items-center justify-center gap-1 text-[11px] font-bold text-brand-400">
+      <i data-lucide="layout-dashboard" class="h-5 w-5"></i>
+      <span>Studio</span>
+    </a>
+    <a href="#clips-section" class="flex flex-col items-center justify-center gap-1 text-[11px] font-medium text-gray-400">
+      <i data-lucide="film" class="h-5 w-5"></i>
+      <span>Clips</span>
+    </a>
+    <a href="#" onclick="alert('Razorpay Pro Subscription')" class="flex flex-col items-center justify-center gap-1 text-[11px] font-medium text-amber-400">
+      <i data-lucide="crown" class="h-5 w-5"></i>
+      <span>Pro</span>
+    </a>
+  </nav>
+
+  <script>
+    lucide.createIcons();
+
+    function setHighlightColor(color) {
+      const word = document.getElementById('sub-word-3');
+      word.style.color = color;
+      word.style.textShadow = `0 0 16px ${color}, 2px 2px 0 #000, -2px -2px 0 #000`;
+    }
+
+    function setFont(fontFamily) {
+      document.getElementById('sub-word-3').parentElement.style.fontFamily = fontFamily;
+    }
+
+    function startSimulatedJob() {
+      const tracker = document.getElementById('job-tracker');
+      const bar = document.getElementById('tracker-bar');
+      const pct = document.getElementById('tracker-pct');
+      const stage = document.getElementById('tracker-stage');
+      const sub = document.getElementById('tracker-sub');
+
+      tracker.classList.remove('hidden');
+
+      let currentPct = 10;
+      stage.innerHTML = '<i data-lucide="loader-2" class="h-4 w-4 text-brand-400 animate-spin"></i> Fetching stream metadata & chapters...';
+      sub.innerText = 'Analyzing 24-hour stream structure without video download...';
+      bar.style.width = '10%';
+      pct.innerText = '10%';
+      lucide.createIcons();
+
+      const timer = setInterval(() => {
+        currentPct += 25;
+        if (currentPct === 35) {
+          stage.innerHTML = '<i data-lucide="loader-2" class="h-4 w-4 text-brand-400 animate-spin"></i> Downloading lightweight mono audio stream...';
+          sub.innerText = 'Downloaded 180MB audio stream instead of 45GB video!';
+        } else if (currentPct === 60) {
+          stage.innerHTML = '<i data-lucide="loader-2" class="h-4 w-4 text-brand-400 animate-spin"></i> Detecting audio excitement & RMS spikes...';
+          sub.innerText = 'Found 3 high-intensity peaks (Score: 96, 91, 88)';
+        } else if (currentPct === 85) {
+          stage.innerHTML = '<i data-lucide="loader-2" class="h-4 w-4 text-brand-400 animate-spin"></i> Surgical cutting & burning karaoke subtitles...';
+          sub.innerText = 'yt-dlp --download-sections fetched exact 22s slice in 1.4s';
+        } else if (currentPct >= 100) {
+          clearInterval(timer);
+          stage.innerHTML = '<i data-lucide="check-circle-2" class="h-4 w-4 text-emerald-400"></i> Completed! Reels ready.';
+          sub.innerText = 'Uploaded 9:16 vertical reels to Cloudflare R2.';
+          bar.style.width = '100%';
+          pct.innerText = '100%';
+          bar.classList.replace('from-brand-500', 'from-emerald-500');
+          bar.classList.replace('to-accent-cyan', 'to-emerald-400');
+          lucide.createIcons();
+          return;
+        }
+        bar.style.width = currentPct + '%';
+        pct.innerText = currentPct + '%';
+        lucide.createIcons();
+      }, 1000);
+    }
+  </script>
+</body>
+</html>
