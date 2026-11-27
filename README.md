@@ -39,7 +39,7 @@ flowchart TD
 
     subgraph DataStorage["Data & Storage Infrastructure"]
         SUPABASE[("Supabase PostgreSQL\n(Profiles, Jobs, Clips, Anti-Abuse)")]
-        R2[("Cloudflare R2 Storage\n(Zero Egress, 48hr Auto-Delete)")]
+        STORAGE[("Supabase Storage Storage\n(Zero Egress, 48hr Auto-Delete)")]
     end
 
     UI -->|Sends Video URL + Device Hash| CF_PROXY
@@ -70,10 +70,10 @@ This architecture is engineered to run a high-volume media processing SaaS on a 
 | :--- | :--- | :--- | :--- | :--- |
 | **Worker & API Server** | Hetzner Cloud (CPX21 - 3 vCPU, 4GB RAM) or Hostinger KVM 2 | ~₹650 – ₹850 / mo | ~₹5,100 (6 mos) | Fast CPU for FFmpeg and Celery workers, handles multiple concurrent 30s clips easily. |
 | **Database & Auth** | Supabase Free Tier | ₹0 / mo | ₹0 | 500MB PostgreSQL, 50,000 Monthly Active Users, built-in Google OAuth & RLS. |
-| **Object Storage** | Cloudflare R2 | ₹0 / mo (10 GB free) | ₹0 | **Zero egress fees** (unlike AWS S3 which charges \$0.09/GB). 48-hour lifecycle policy auto-deletes old clips. |
+| **Object Storage** | Supabase Storage | ₹0 / mo (10 GB free) | ₹0 | **Zero egress fees** (unlike AWS S3 which charges \$0.09/GB). 48-hour lifecycle policy auto-deletes old clips. |
 | **Caching & Queue** | Upstash Redis Free Tier or Local Redis | ₹0 / mo | ₹0 | 10,000 requests/day free on Upstash or run directly inside Docker on your VPS. |
 | **Domain & DNS** | Cloudflare Registrar (.com or .in) | ~₹750 / year | ₹750 (1 yr) | Wholesale domain pricing, free SSL, DDoS protection, edge caching. |
-| **AI Hook Detection** | Google Gemini 1.5 Flash API | ₹0 / mo | ₹0 | 15 RPM / 1,500 requests per day 100% free; analyzes transcripts in seconds. |
+| **AI Hook Detection** | Google Gemini Flash API (models set via `GEMINI_MODELS`) | ₹0 / mo | ₹0 | 15 RPM / 1,500 requests per day 100% free; analyzes transcripts in seconds. |
 | **Payments Gateway** | Razorpay Standard | ₹0 upfront (2% per tx) | ₹0 fixed | Direct NEFT/IMPS bank settlement in India without monthly recurring platform fees. |
 | **Buffer / Contingency** | VPS upgrade or Cloudflare worker | — | ~₹4,150 | Reserved for traffic spikes, proxy IP rotation if needed. |
 | **TOTAL** | | **~₹850 / mo** | **~₹10,000 INR (10-12 months runway)** | |
@@ -101,8 +101,8 @@ A 20 to 30-hour gaming stream (e.g., GTA V RP, Elden Ring, Valorant tournament) 
    - Smart vertical crop with FFmpeg:
      - `crop=in_h*9/16:in_h:(in_w-out_w)/2:0` (Center Action Crop) or dual-layer blurred background.
    - Burn animated karaoke `.ass` subtitles with custom highlight colors directly into the video stream.
-5. **Immediate S3/R2 Ingestion:**
-   - Streamed to Cloudflare R2; local temporary chunks are purged immediately.
+5. **Immediate Supabase Storage Upload:**
+   - Streamed to Supabase Storage; local temporary chunks are purged immediately.
 
 ---
 
@@ -147,7 +147,6 @@ gaming-reel-clipper/
 │       │   └── v1/
 │       │       ├── api.py             # Root v1 router
 │       │       └── endpoints/
-│       │           ├── auth.py        # Token verification & session management
 │       │           ├── jobs.py        # Clip generation job dispatch & status
 │       │           ├── clips.py       # Retrieve clips, download counts, sharing
 │       │           ├── payments.py    # Razorpay order creation & webhook listener
@@ -159,7 +158,7 @@ gaming-reel-clipper/
 │       │   ├── spike_detector.py      # Audio RMS energy & chat frequency analyzer
 │       │   ├── ai_analyzer.py         # Gemini Flash hook & viral score evaluator
 │       │   ├── video_editor.py        # FFmpeg 9:16 vertical crop & ASS subtitle burner
-│       │   ├── r2_storage.py          # Cloudflare R2 boto3 upload & presigned URLs
+│       │   ├── supabase_storage.py          # Supabase Storage native Supabase Storage upload & public URLs
 │       │   └── razorpay_service.py    # Razorpay subscriptions & signature validation
 │       └── workers/
 │           ├── celery_app.py          # Celery configuration & Redis broker
@@ -221,7 +220,7 @@ cp .env.example .env
 cp .env.example backend/.env
 cp .env.example frontend/.env.local
 ```
-Fill in your Supabase, Cloudflare R2, Razorpay, and Gemini credentials.
+Fill in your Supabase, Supabase Storage, Razorpay, and Gemini credentials.
 
 ### 3. Setup Supabase Database
 1. Go to your Supabase SQL Editor.
@@ -255,7 +254,10 @@ Open `http://localhost:3000` on your mobile browser or desktop.
    - `clipforge-api` (FastAPI Docker web service with `/health` check)
    - `clipforge-worker` (Celery + FFmpeg + Faster-Whisper Docker worker)
    - `clipforge-frontend` (Next.js 14 Node web service)
-4. Fill in the prompted environment variables (`NEXT_PUBLIC_SUPABASE_URL`, `NEXT_PUBLIC_SUPABASE_ANON_KEY`, `SUPABASE_SERVICE_ROLE_KEY`, `GEMINI_API_KEY`, and optionally R2 / Razorpay keys).
+4. Fill in the prompted environment variables (`NEXT_PUBLIC_SUPABASE_URL`, `NEXT_PUBLIC_SUPABASE_ANON_KEY`, `SUPABASE_SERVICE_ROLE_KEY`, `GEMINI_API_KEY`, and Upstash `REDIS_URL` and optional Razorpay keys).
+   Also set the **public** URLs of your services (Render cannot supply them automatically; its `host` property is a private-network name that browsers cannot reach):
+   - on `clipforge-api`: `FRONTEND_URL=https://<your-frontend>.onrender.com`
+   - on `clipforge-frontend`: `NEXT_PUBLIC_BACKEND_API_URL=https://<your-api>.onrender.com` and `BACKEND_API_URL` (same value). `NEXT_PUBLIC_*` values are baked in at build time, so redeploy the frontend after changing them.
 5. In Supabase **Authentication -> URL Configuration**, add `https://<your-frontend>.onrender.com/auth/callback` and `https://<your-frontend>.onrender.com/dashboard` to **Redirect URLs**.
    > **Tip (Free Tier without Worker):** If you deploy only `clipforge-api` and `clipforge-frontend` without `clipforge-worker` or Redis, set `USE_IN_PROCESS_WORKER=true` on `clipforge-api` to process jobs in-process.
 
@@ -273,11 +275,12 @@ Open `http://localhost:3000` on your mobile browser or desktop.
      ```
    - Clone this repository, add `.env`, and launch:
      ```bash
-     docker compose -f docker-compose.prod.yml up -d
+     docker compose up -d --build
      ```
    - Configure Nginx with SSL via Certbot as a reverse proxy for `api.yourdomain.com`.
 
 3. **Cloudflare Setup:**
    - Set Cloudflare SSL/TLS mode to **Full (Strict)**.
-   - Ensure `CF-Connecting-IP` is passed to the backend headers.
-   - Configure R2 bucket with 48h lifecycle expiration rule.
+   - Ensure `CF-Connecting-IP` is passed to the backend headers, and list your reverse proxy's address/CIDR in `TRUSTED_PROXY_IPS`. Forwarded-IP headers are ignored unless the direct peer is a trusted proxy (this protects the per-IP daily quota from spoofing).
+   - Re-run `supabase/schema.sql` in the Supabase SQL editor after upgrading: it is idempotent and now also locks down client-side writes (so users cannot set their own tier) and restricts the quota functions to the backend.
+   - Ensure the Supabase Storage `clips` bucket is created (automatically done by `supabase/schema.sql`).

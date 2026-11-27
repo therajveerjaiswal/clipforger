@@ -1,15 +1,9 @@
-# Render Blueprint for ClipForge AI
-# Deploy via Render Dashboard -> New -> Blueprint -> Connect your Git repository
+# Render Blueprint for ClipForge AI (100% Free Tier)
+# Stack: Render Free (API + Frontend) + Supabase Free (DB, Auth, Storage) + Upstash Free (Redis)
+# Deploy via Render Dashboard -> New -> Blueprint -> Connect your GitHub repository
 
 services:
-  # 1. Redis / Key Value (Task Queue & Result Backend for Celery)
-  - type: keyvalue
-    name: clipforge-redis
-    plan: free
-    maxmemoryPolicy: noeviction
-    ipAllowList: []
-
-  # 2. FastAPI Backend API
+  # 1. FastAPI Backend API (Free Tier with in-process worker; zero paid worker required)
   - type: web
     name: clipforge-api
     runtime: docker
@@ -20,42 +14,37 @@ services:
     envVars:
       - key: ENVIRONMENT
         value: production
-      - key: REDIS_URL
-        fromService:
-          type: keyvalue
-          name: clipforge-redis
-          property: connectionString
+      # Public https URL of the frontend, e.g. https://clipforge-frontend.onrender.com (used for CORS).
       - key: FRONTEND_URL
-        fromService:
-          type: web
-          name: clipforge-frontend
-          property: host
+        sync: false
+      # Runs clipping pipeline in-process on Render Free (set to "false" only if running a separate Celery worker).
       - key: USE_IN_PROCESS_WORKER
-        value: "false"
+        value: "true"
+      # Upstash Free Redis TLS URL (rediss://default:<password>@<host>.upstash.io:6379)
+      - key: REDIS_URL
+        sync: false
+      - key: REDIS_SSL_CERT_REQS
+        value: required
       - key: WHISPER_MODEL_SIZE
         value: tiny
       - key: WHISPER_DEVICE
         value: cpu
       - key: WHISPER_COMPUTE_TYPE
         value: int8
+      - key: GEMINI_API_KEY
+        sync: false
+      - key: GEMINI_MODELS
+        value: gemini-3.6-flash,gemini-3.5-flash-lite
+      # Supabase (Database, Auth & Object Storage)
       - key: NEXT_PUBLIC_SUPABASE_URL
         sync: false
       - key: NEXT_PUBLIC_SUPABASE_ANON_KEY
         sync: false
       - key: SUPABASE_SERVICE_ROLE_KEY
         sync: false
-      - key: GEMINI_API_KEY
-        sync: false
-      - key: R2_ACCOUNT_ID
-        sync: false
-      - key: R2_ACCESS_KEY_ID
-        sync: false
-      - key: R2_SECRET_ACCESS_KEY
-        sync: false
-      - key: R2_BUCKET_NAME
-        value: gaming-reel-clips
-      - key: R2_PUBLIC_DOMAIN
-        sync: false
+      - key: SUPABASE_STORAGE_BUCKET
+        value: clips
+      # Optional Razorpay Pro Subscriptions
       - key: NEXT_PUBLIC_RAZORPAY_KEY_ID
         sync: false
       - key: RAZORPAY_KEY_SECRET
@@ -65,48 +54,7 @@ services:
       - key: RAZORPAY_PRO_PLAN_ID
         sync: false
 
-  # 3. Celery Video & AI Background Worker
-  - type: worker
-    name: clipforge-worker
-    runtime: docker
-    dockerfilePath: ./backend/Dockerfile
-    dockerContext: ./backend
-    dockerCommand: celery -A app.workers.celery_app worker --loglevel=info --concurrency=1
-    plan: starter
-    envVars:
-      - key: ENVIRONMENT
-        value: production
-      - key: REDIS_URL
-        fromService:
-          type: keyvalue
-          name: clipforge-redis
-          property: connectionString
-      - key: WHISPER_MODEL_SIZE
-        value: tiny
-      - key: WHISPER_DEVICE
-        value: cpu
-      - key: WHISPER_COMPUTE_TYPE
-        value: int8
-      - key: NEXT_PUBLIC_SUPABASE_URL
-        sync: false
-      - key: NEXT_PUBLIC_SUPABASE_ANON_KEY
-        sync: false
-      - key: SUPABASE_SERVICE_ROLE_KEY
-        sync: false
-      - key: GEMINI_API_KEY
-        sync: false
-      - key: R2_ACCOUNT_ID
-        sync: false
-      - key: R2_ACCESS_KEY_ID
-        sync: false
-      - key: R2_SECRET_ACCESS_KEY
-        sync: false
-      - key: R2_BUCKET_NAME
-        value: gaming-reel-clips
-      - key: R2_PUBLIC_DOMAIN
-        sync: false
-
-  # 4. Next.js 14 Frontend Web App
+  # 2. Next.js 14 Frontend Web App (Free Tier)
   - type: web
     name: clipforge-frontend
     runtime: node
@@ -115,16 +63,11 @@ services:
     buildCommand: npm install --include=dev && npm run build
     startCommand: npm run start
     envVars:
+      # Public https URL of the API, e.g. https://clipforge-api.onrender.com (baked into bundle at build time).
       - key: NEXT_PUBLIC_BACKEND_API_URL
-        fromService:
-          type: web
-          name: clipforge-api
-          property: host
+        sync: false
       - key: BACKEND_API_URL
-        fromService:
-          type: web
-          name: clipforge-api
-          property: host
+        sync: false
       - key: NEXT_PUBLIC_SUPABASE_URL
         sync: false
       - key: NEXT_PUBLIC_SUPABASE_ANON_KEY
